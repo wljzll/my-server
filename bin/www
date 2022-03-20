@@ -1,0 +1,40 @@
+#! /usr/bin/env node
+const { program } = require("commander");
+const config = require("./config");
+const version = require("../package.json").version;
+const Server = require('../src/main')
+
+
+
+program.version(version); // 当我们使用 ms --version时对应的命令行显示提示
+
+// 配置的是我们执行 ms --help时 命令行输出的我们可以执行哪些命令
+program.name("ms").usage(" [options]"); // 当我们使用 ms --help时对应的命令行显示提示
+const usages = [];
+Object.entries(config).forEach(([key, value]) => {
+  usages.push(value.usage);
+  program.option(value.option, value.description, value.default);
+});
+// 配置的是我们执行 ms --help时 命令行输出的我们可以执行哪些命令
+
+// 配置我们执行 ms --help时 输出的Examples信息
+program.on("--help", function () {
+  console.log("\nExamples:");
+  usages.forEach((usage) => console.log(" " + usage));
+});
+// 配置我们执行 ms --help时 输出的Examples信息
+
+// 解析命令行参数
+program.parse(process.argv);
+// 拿到命令行参数
+let opts = program.opts();
+
+// 处理用户输入Ctrl + C组合键：监听进程
+process.on('SIGINT', function () {
+  console.log('Exit');
+  process.exit();
+})
+
+
+let server = new Server(opts);
+server.start();
